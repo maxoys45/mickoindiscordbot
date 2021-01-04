@@ -1,14 +1,16 @@
-const { token, prefix, delimiter } = require('./config.json')
-const Discord = require('discord.js')
+import dotenv from 'dotenv'
+import { prefix, delimiter } from './config.json'
+import Discord from 'discord.js'
+
+dotenv.config()
+
 const client = new Discord.Client()
 
-// const balances = {
-//   maxoys45: 1000,
-// }
-
+const startingBalance = 5000
 const balances = {
-  crekk: 5000,
-  maxoys45: 5000,
+  crekk: startingBalance,
+  maxoys45: startingBalance,
+  chubbylove: startingBalance,
 }
 
 client.once('ready', () => {
@@ -32,23 +34,30 @@ client.on('message', message => {
 
     console.log(recipient, amount, balances[message.author.username], balances[recipient])
     console.log(balances)
-    // return
 
     if (balances[message.author.username] && balances[message.author.username] >= amount && balances[recipient]) {
       balances[recipient] += amount
       balances[message.author.username] -= amount
 
-      message.channel.send(`${message.author.username} sent ${recipient} ${delimiter}**${amount}**`)
-      message.channel.send(`${recipient} now has ${delimiter}**${balances[recipient]}**`)
+      message.channel.send(`\`\`\`apache
+      ${message.author.username} sent ${recipient} ${delimiter}${amount}
+      ${recipient} now has ${delimiter}${balances[recipient]}\`\`\``)
+      // message.channel.send(`${recipient} now has ${delimiter}${balances[recipient]}`)
+
     } else {
       message.channel.send(`Message must be in !send [username] [amount] format eg. !send maxoys45 1000`)
     }
   }
 
   if (message.content === '!balance') {
-    message.channel.send(`${message.author.username} has ${delimiter}${balances[message.author.username]}`)
+    message.channel.send(formatApacheMsg(`${message.author.username} has ${delimiter}${balances[message.author.username]}`))
   }
 })
+
+const formatApacheMsg = msg => {
+  return `\`\`\`apache
+  ${msg}\`\`\``
+}
 
 const messageCommandResponse = (clientMessage, string, response) => {
   if (clientMessage.content === `${prefix}${string}`) {
@@ -58,10 +67,10 @@ const messageCommandResponse = (clientMessage, string, response) => {
 
 const setUserBalance = user => {
   if (!balances.hasOwnProperty(user)) {
-    balances[user] = 5000
+    balances[user] = startingBalance
   }
 
   console.log(balances)
 }
 
-client.login(token)
+client.login(process.env.BOT_TOKEN)
