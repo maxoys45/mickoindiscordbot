@@ -3,6 +3,8 @@ const globals = {
   balances: {
     crekk: 5000,
     chubbylove: 5000,
+    maxoys45: 5000,
+    Laurie: 5000,
   },
 }
 
