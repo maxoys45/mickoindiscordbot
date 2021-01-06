@@ -1,76 +1,52 @@
 import dotenv from 'dotenv'
-import { prefix, delimiter } from './config.json'
 import Discord from 'discord.js'
+import globals from './globals/vars'
+
+import { showHelp, userNotCreated, listUsers, sendCoin, userBalance, createUser } from './actions'
 
 dotenv.config()
 
 const client = new Discord.Client()
-
-const startingBalance = 5000
-const balances = {
-  crekk: startingBalance,
-  maxoys45: startingBalance,
-  chubbylove: startingBalance,
-}
 
 client.once('ready', () => {
 	console.log('Ready!')
 })
 
 client.on('message', message => {
-  // if (message.content === `${prefix}ping`) {
-  //   message.channel.send('Pong.')
-  // } else if (message.content === `${prefix}me`) {
-  //   message.channel.send(`Your balance: ${balances[message.author.username]}`);
-  // }
+  if (message.content === '!helpme') {
+    showHelp(message)
 
-  messageCommandResponse(message, 'me', 'you smell')
+    return
+  }
 
-  setUserBalance(message.author.username)
+  if (message.content === '!users') {
+    listUsers(message)
 
-  if (message.content.startsWith('!send')) {
-    const recipient = message.content.split(' ')[1]
-    const amount = Number(message.content.split(' ')[2])
+    return
+  }
 
-    console.log(recipient, amount, balances[message.author.username], balances[recipient])
-    console.log(balances)
+  if (message.content === '!join') {
+    createUser(message)
 
-    if (balances[message.author.username] && balances[message.author.username] >= amount && balances[recipient]) {
-      balances[recipient] += amount
-      balances[message.author.username] -= amount
+    return
+  }
 
-      message.channel.send(`\`\`\`apache
-      ${message.author.username} sent ${recipient} ${delimiter}${amount}
-      ${recipient} now has ${delimiter}${balances[recipient]}\`\`\``)
-      // message.channel.send(`${recipient} now has ${delimiter}${balances[recipient]}`)
+  if (
+    message.content.startsWith('!') &&
+    !globals.balances.hasOwnProperty(message.author.username)
+  ) {
+    userNotCreated(message)
 
-    } else {
-      message.channel.send(`Message must be in !send [username] [amount] format eg. !send maxoys45 1000`)
-    }
+    return
   }
 
   if (message.content === '!balance') {
-    message.channel.send(formatApacheMsg(`${message.author.username} has ${delimiter}${balances[message.author.username]}`))
+    userBalance(message)
+  }
+
+  if (message.content.startsWith('!send')) {
+    sendCoin(message)
   }
 })
-
-const formatApacheMsg = msg => {
-  return `\`\`\`apache
-  ${msg}\`\`\``
-}
-
-const messageCommandResponse = (clientMessage, string, response) => {
-  if (clientMessage.content === `${prefix}${string}`) {
-    clientMessage.channel.send(response)
-  }
-}
-
-const setUserBalance = user => {
-  if (!balances.hasOwnProperty(user)) {
-    balances[user] = startingBalance
-  }
-
-  console.log(balances)
-}
 
 client.login(process.env.BOT_TOKEN)
